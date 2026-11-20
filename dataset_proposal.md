@@ -1,8 +1,8 @@
 # Project 3, Path B: Dataset proposal
 
-**Group:** AS (Arian and Simon)
+Group: AS (Arian and Simon)
 
-**Dataset:** Gravity Spy training set v1.0 (Bahaadini et al. 2018). It contains time–frequency spectrograms of transient noise "glitches" from the Advanced LIGO detectors in the O1 and O2 observing runs, labelled by Gravity Spy volunteers on Zooniverse.
+Dataset: Gravity Spy training set v1.0 (Bahaadini et al. 2018). It contains time–frequency spectrograms of transient noise "glitches" from the Advanced LIGO detectors in the O1 and O2 observing runs, labelled by Gravity Spy volunteers on Zooniverse.
 
 ## Download, format and licence
 
@@ -27,7 +27,7 @@
 - Bahaadini et al., Information Sciences 444, 172 (2018): the dataset paper, with multi-view CNN benchmarks.
 - George, Shen & Huerta (2017), [arXiv:1706.07446](https://arxiv.org/abs/1706.07446): deep transfer learning on the same data.
 - Later CNN and attention-based studies, e.g. [arXiv:2303.13917](https://arxiv.org/abs/2303.13917) and [arXiv:2401.12913](https://arxiv.org/abs/2401.12913).
-- these citations are found and written by OpenAI chatgpt, then manually verified by us
+- these citations are found and partially written by OpenAI chatgpt, then manually verified by us
 
 ## Why the course methods fit
 
