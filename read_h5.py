@@ -82,10 +82,14 @@ print_event_id(path_spy)
 
 
 meta = pd.read_csv("trainingset_v1d1_metadata.csv", index_col="gravityspy_id")
-ev = get_event(path_spy, meta, event_id="08UZkPPyFQ")
+ev1 = get_event(path_spy, meta, event_id="08UZkPPyFQ")
+ev2 = get_event(path_spy, meta, event_id=None, cls="Power_Line", split="train", index=10)
+ev3 = get_event(path_spy, meta, event_id=None, cls="Extremely_Loud", split="train", index=10)
 # ev = get_event(path_spy, meta, cls="Power_Line", split="train", index=0)
 
-plot_event(ev)
+plot_event(ev1)
+plot_event(ev2)
+plot_event(ev3)
 plt.show()
 
 
