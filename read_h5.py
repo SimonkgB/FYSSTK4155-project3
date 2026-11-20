@@ -1,32 +1,97 @@
+# pyright: reportIndexIssue=false, reportGeneralTypeIssues=false, reportArgumentType=false
 import numpy as np
 import h5py
+import pandas as pd
 import matplotlib.pyplot as plt
 
-def load_split(path, split, durations=("0.5", "1.0", "2.0", "4.0")):
-    X, y = [], []
+
+
+DURATIONS = ("0.5", "1.0", "2.0", "4.0")
+F_MIN, F_MAX = 10.0, 2048.0
+N_F, N_T = 140, 170
+path_spy = "./trainingsetv1d1.h5"
+
+
+def freq_axis(nf):
+    return np.geomspace(F_MAX, F_MIN, nf)
+
+
+def time_axis(duration):
+    d = float(duration)
+    return np.linspace(-d / 2, d / 2, N_T)
+
+
+
+
+def get_event(path, meta, event_id=None, cls=None, split="train", index=0):
+    # dunno if i wanna do event id or index, so remove either when that time comes
+    if event_id is not None:
+        cls, split = meta.loc[event_id, ["label", "sample_type"]]
     with h5py.File(path, "r") as f:
-        classes = sorted(f.keys())
-        for ci, cls in enumerate(classes):
-            for sid in f[cls][split]:
-                g = f[cls][split][sid]
-                imgs = []
-                for d in durations:
-                    imgs.append(g[f"{d}.png"][0])
-                X.append(np.stack(imgs))  # (n_dur, 140, 170)
-                y.append(ci)
-    return np.array(X), np.array(y), classes
+        if event_id is None:
+            event_id = sorted(f[cls][split])[index]
+        g = f[cls][split][event_id]
+        images = {}
+        for d in DURATIONS:
+            images[d] = g[f"{d}.png"][0]
+    time_ax = {}
+    for d in DURATIONS:
+        time_ax[d] = time_axis(d)
+    return {
+        "id": event_id,
+        "class": cls,
+        "split": split,
+        "images": images,  # {duration: (140, 170) array}
+        "freq": freq_axis(N_F),  # (140,) Hz
+        "time": time_ax,  # {duration: (170,) s}
+        "meta": meta.loc[event_id].to_dict(),
+    }
 
 
-path = "trainingsetv1d1.h5"
-Xtr, ytr, classes = load_split(path, "train")
-Xva, yva, _ = load_split(path, "validation")
-Xte, yte, _ = load_split(path, "test")
-print(Xtr.shape, np.bincount(ytr))  # (5587, 4, 140, 170) [ 229   59   41 1274   41
-# 316  195  498  361  437  315  107   57   19 314  185  308  237   73  284   29  208]
+def plot_event(ev):
+    fig, axes = plt.subplots(1, len(DURATIONS), figsize=(16, 4.5), sharey=True, layout="constrained")
+    f_edges = np.geomspace(F_MIN, F_MAX, N_F + 1)
+    m = ev["meta"]
+    to_max = []
+    for img in ev["images"].values():
+        to_max.append(img.max())
+    vmax = max(to_max)
+    mesh = None
+    for ax, d in zip(axes, DURATIONS):
+        t_edges = np.linspace(-float(d) / 2, float(d) / 2, N_T + 1)
+        img = ev["images"][d][::-1]
+        mesh = ax.pcolormesh(t_edges, f_edges, img, cmap="viridis", vmin=0, vmax=vmax)
+        ax.set_yscale("log")
+        ax.set_title(f"{d} s window")
+        ax.axhline(m["peak_frequency"], color="red", ls="--", lw=1.5)
+    axes[0].set_ylabel("Frequency [Hz]")
+    fig.supxlabel("Time relative to event [s]")
+    fig.colorbar(mesh, ax=axes, label="Normalized energy [a.u.]")
+    title = f"{ev['class']} ({ev['split']}) - {ev['id']}"
+    print(f"{m['ifo']}, SNR {m['snr']:.1f}, peak {m['peak_frequency']:.0f} Hz, (red dashed), duration {m['duration']:.2f} s")
+    fig.suptitle(title)
+    return fig
 
-plt.imshow(Xtr[0, 1], aspect="auto", origin="lower")
-plt.title(classes[ytr[0]])
+
+def print_event_id(path):
+    with h5py.File(path, "r") as f:
+        for cls in sorted(f.keys()):
+            event_id = sorted(f[cls]["train"])[0]
+            print(f"{cls}: {event_id}")
+print_event_id(path_spy)
+
+
+meta = pd.read_csv("trainingset_v1d1_metadata.csv", index_col="gravityspy_id")
+ev = get_event(path_spy, meta, event_id="08UZkPPyFQ")
+# ev = get_event(path_spy, meta, cls="Power_Line", split="train", index=0)
+
+plot_event(ev)
 plt.show()
+
+
+
+
+
 
 #   idx	class	            n
 #   0	1080Lines	        229
