@@ -89,6 +89,7 @@ ev3 = get_event(path_spy, meta, event_id=None, cls="Extremely_Loud", split="trai
 
 plot_event(ev1)
 plot_event(ev2)
+plt.savefig("example.png")
 plot_event(ev3)
 plt.show()
 
