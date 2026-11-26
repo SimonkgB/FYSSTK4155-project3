@@ -49,6 +49,7 @@ class FFNN(nn.Module):
         for h in hidden:
             layers.append(nn.Linear(in_dim, h))
             layers.append(make_activation(activation))
+            in_dim = h
         layers.append(nn.Linear(in_dim, n_classes))     # output logits no activation
         self.flatten = nn.Flatten()
         self.net = nn.Sequential(*layers)
@@ -58,6 +59,9 @@ class FFNN(nn.Module):
 
 
 
+
+
+    # Next: make the CNN and the 2d conv and activation block
 
 
 
@@ -132,8 +136,28 @@ def skibedi():
     return model
 
 
+
+
+
+# simple test to see if all activations are created and applied correclty, should print (input(ie. 8), 22)
+def shapes():
+    x_flat = torch.randn(8, 1470)
+    tests = [
+        ("LR", LogisticRegressionNet(1470), x_flat),
+        ("FFNN", FFNN(1470, (25,100, 50), "relu", N_CLASSES), x_flat),
+    ]
+    for name, model, x in tests:
+        out = model(x)
+        if out.requires_grad:
+            sum_aaa = 0
+            for p in model.parameters():
+                sum_aaa += p.numel()
+        print(f"{name}:  out {tuple(out.shape)}  params {sum_aaa}")
+
+
 if __name__ == "__main__":
-    skibedi()
+    # skibedi()
+    shapes()
 
 
 
