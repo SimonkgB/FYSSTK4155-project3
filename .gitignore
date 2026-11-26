@@ -1,4 +1,4 @@
-./.venv/
-trainingset_v1d1_metadata.csv
-trainingset_v1d1.h5
-./__pycache__/
+.venv/
+*.csv
+*.h5
+__pycache__/
