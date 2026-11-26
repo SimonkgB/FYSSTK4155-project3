@@ -5,7 +5,7 @@ import torch
 from torch import nn
 
 from config import N_CLASSES
-
+from transforms import Standardize, AvgPoolFlatten
 
 
 
@@ -76,10 +76,18 @@ def skibedi():
     X_va, y_va = data.split("validation")
 
     # Standardise with training statistics
-    mean = X_tr.mean()
-    std = X_tr.std()
-    x_tr = torch.from_numpy((X_tr - mean) / std).flatten(1)
-    x_va = torch.from_numpy((X_va - mean) / std).flatten(1)
+    # mean = X_tr.mean()
+    # std = X_tr.std()
+    # x_tr = torch.from_numpy((X_tr - mean) / std).flatten(1)
+    # x_va = torch.from_numpy((X_va - mean) / std).flatten(1)
+    X_tr_t = torch.from_numpy(X_tr)
+    X_va_t = torch.from_numpy(X_va)
+    standard = Standardize().fit(X_tr_t)   # statistics from TRAIN only
+    pool_flat = AvgPoolFlatten(4)
+    x_tr = pool_flat(standard(X_tr_t))
+    x_va = pool_flat(standard(X_va_t))  # with k=4 torch.Size([5457, 1470]),,, ((35*42))
+    print(x_tr.shape)
+
     t_tr = torch.from_numpy(y_tr)
     #print(y_tr)
 
