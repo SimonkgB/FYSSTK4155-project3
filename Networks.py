@@ -66,10 +66,10 @@ def skibedi():
     import numpy as np
     from torch.utils.data import DataLoader, TensorDataset
     from sklearn.metrics import balanced_accuracy_score
-    from config import Config
+    from config import Config, set_seed
     from GravitySpyLoader import GravitySpyData
 
-    torch.manual_seed(2026)
+    set_seed(2026)
     data = GravitySpyData(Config(views=("1.0",)))
     data.load()
     X_tr, y_tr = data.split("train")

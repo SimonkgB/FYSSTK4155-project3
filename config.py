@@ -1,6 +1,7 @@
 import torch
 from dataclasses import dataclass
-
+import numpy as np
+import random
 
 
 DURATIONS = ("0.5", "1.0", "2.0", "4.0")
@@ -15,3 +16,8 @@ class Config:
     seed: int = 2026
     views: tuple[str, ...] = ("1.0",)
     blank_rule: str = "any"
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
