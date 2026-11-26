@@ -40,17 +40,17 @@ class GravitySpyData:
         idx = []
         for v in self.config.views:
             idx.append(DURATIONS.index(v))
-            print(v)
-        print(idx)
+        #print(idx)
         self.data = {}
         self.removed = []
         with h5py.File(self.config.h5_path, "r") as f:
             self.classes = sorted(f.keys())
+            #print(self.classes)
             for split in ("train", "validation", "test"):
                 images = []
                 labels = []
                 ids = []
-                for y, cls in enumerate(self.classes):
+                for y, cls in enumerate(self.classes): # ["Extremely_Loud",])
                     g = f[cls][split]
                     for eid in sorted(g):
                         all_views = np.stack([g[eid][f"{d}.png"][0] for d in DURATIONS])  # (4, 140, 170)
@@ -69,6 +69,11 @@ class GravitySpyData:
         images, labels, _ = self.data[name]
         return images, labels
 
+    def blank_report(self):
+        """Number of removed blank samples per class and split (for the report)"""
+        import pandas as pd
+        df = pd.DataFrame(self.removed, columns=["label", "split", "id"])
+        return df.groupby(["label", "split"]).size().unstack(fill_value=0)
 
 # TODO:
 # Consider savin the cuts to npy format for faster loading.
@@ -81,5 +86,14 @@ if __name__=="__main__":
     load_data = GravitySpyData(conf)
     load_data.load()
     images, labels = load_data.split("train")
+    print(load_data.blank_report())
     print(images.shape, images.dtype)   # (5457, 3, 140, 170) float32
     print(labels.shape, labels.dtype)   # (5457,) int64
+    import matplotlib.pyplot as plt
+
+    for i in range(images.shape[0]):
+        plt.figure()
+        plt.imshow(images[i,2,:,:])
+        plt.colorbar()
+        plt.savefig(f"{i}_3.png")
+
