@@ -1,11 +1,9 @@
-# LLM-assisted (Claude, Anthropic): network classes, make_activation, n_params and the examples.
-from typing import cast
-
 import torch
 from torch import nn
 
 from config import N_CLASSES
 from transforms import Standardize, AvgPoolFlatten
+from GravitySpyLoader import class_weights
 
 
 
@@ -113,11 +111,14 @@ def skibedi():
     #print(y_tr)
 
     # class inballance
-    counts = np.bincount(y_tr)
+    # counts = np.bincount(y_tr)
     # print(counts)
     # print(len(counts))
     # print(len(y_tr))
-    w = torch.tensor(len(y_tr) / (N_CLASSES * counts), dtype=torch.float32) # the initial weights should allow for each to be eaqually probable and we must thus amplify the least numerous and downscale the most numeros  labels
+    #w = torch.tensor(len(y_tr) / (N_CLASSES * counts), dtype=torch.float32) # the initial weights should allow for each to be eaqually probable and we must thus amplify the least numerous and downscale the most numeros  labels
+    #print(w) moved this into its own func
+    w = class_weights(y_tr, N_CLASSES)
+    print(w)
     # must give dtype, otherwise it  loss_fn reads double and gets sad
     # print(w)
 
@@ -209,7 +210,7 @@ def på_skibedi():
 
 
 
-
+# the original skibedi or as i would like to call it SKi(e)mbedid has now been superceeded by classifier.py test
 
 
 
@@ -235,8 +236,9 @@ def shapes():
 
 
 if __name__ == "__main__":
-    # skibedi()
-    shapes()
+    print(1)
+    #skibedi()
+    #shapes()
     # på_skibedi()
 
 

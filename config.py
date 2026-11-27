@@ -15,7 +15,14 @@ class Config:
     meta_path: str = "./trainingset_v1d1_metadata.csv"
     seed: int = 2026
     views: tuple[str, ...] = ("1.0",)
+    pool: int = 4
     blank_rule: str = "any"
+    batch_size: int = 64
+    epochs: int = 50
+    lr: float = 1e-3
+    weight_decay: float = 0.0
+
+
 
 def set_seed(seed: int) -> None:
     random.seed(seed)

@@ -1,6 +1,10 @@
-import numpy as np
-from config import Config,DURATIONS, BLANK_STD
 import h5py
+import numpy as np
+import torch
+from torch.utils.data import Dataset
+
+from config import Config, DURATIONS, BLANK_STD, N_CLASSES
+from transforms import Standardize, AvgPoolFlatten
 
 # we notice that some of the classified samples contains at least one view
 # where every pixel sits at the image minimum  and are completly empty.
@@ -75,8 +79,55 @@ class GravitySpyData:
         df = pd.DataFrame(self.removed, columns=["label", "split", "id"])
         return df.groupby(["label", "split"]).size().unstack(fill_value=0)
 
-# TODO:
-# Consider savin the cuts to npy format for faster loading.
+
+
+
+class GlitchDataset(Dataset):
+    def __init__(self, x: torch.Tensor, y, transform=None):
+        self.x = x
+        self.y = torch.as_tensor(y, dtype=torch.long)
+        self.transform = transform
+
+    def __len__(self) -> int:
+        return len(self.y)
+
+    def __getitem__(self, i: int) -> tuple[torch.Tensor, torch.Tensor]:
+        x = self.x[i]
+        if self.transform is not None:
+            x = self.transform(x)
+        return x, self.y[i]
+
+    def numpy(self) -> tuple[np.ndarray, np.ndarray]:
+        return self.x.flatten(1).numpy(), self.y.numpy()
+
+
+def class_weights(y: np.ndarray, n_classes: int = N_CLASSES) -> torch.Tensor:
+    counts = np.bincount(y, minlength=n_classes)
+    return torch.tensor(len(y) / (n_classes * np.maximum(counts, 1)), dtype=torch.float32)
+
+
+
+def build_datasets(data, flat: bool, pool: int = 4, train_transform=None):
+    """Only need to read h5 file once, contruct
+    Train/validation/test GlitchDatasets from a loaded GravitySpyData."""
+    splits = ("train", "validation", "test")
+    raw = {s: data.split(s) for s in splits}
+    scaler = Standardize().fit(torch.from_numpy(raw["train"][0]))
+    pool_flat = AvgPoolFlatten(pool)
+    out = []
+    for s in splits:
+        x = scaler(torch.from_numpy(raw[s][0]))
+        if flat:
+            x = pool_flat(x)
+
+        if s=="train":
+            innp = train_transform
+        else:
+            innp = None
+        out.append(GlitchDataset(x, raw[s][1], innp))
+    return tuple(out)
+
+
 
 
 
