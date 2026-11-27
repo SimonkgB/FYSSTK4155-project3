@@ -121,12 +121,12 @@ if __name__ == "__main__":
     w = class_weights(train.y.numpy())
 
     model = LogisticRegressionNet(n_features=train.x.shape[1])
-    trainer = Trainer(config, class_weights=w)
+    trainer = Trainer(config, class_weights=w, optimizer="adam") # optimizer="sgd" doesnt work yet see:: AttributeError: 'NoneType' object has no attribute'zero_grad'
     trainer.fit(model, train, val)
 
     print(f"best epoch: {trainer.best_epoch}")
-    print(f"val loss per epoch: {trainer.history["val_loss"]:.3}")
-    print(f"val acc per epoch: {trainer.history["val_acc"]:.3}")
+    print(f"val loss per epoch: {trainer.history["val_loss"]}")
+    print(f"val acc per epoch: {trainer.history["val_acc"]}")
 
 
 

@@ -111,7 +111,9 @@ def build_datasets(data, flat: bool, pool: int = 4, train_transform=None):
     """Only need to read h5 file once, contruct
     Train/validation/test GlitchDatasets from a loaded GravitySpyData."""
     splits = ("train", "validation", "test")
-    raw = {s: data.split(s) for s in splits}
+    raw = {}
+    for s in splits:
+        raw[s] = data.split(s)
     scaler = Standardize().fit(torch.from_numpy(raw["train"][0]))
     pool_flat = AvgPoolFlatten(pool)
     out = []
@@ -119,7 +121,7 @@ def build_datasets(data, flat: bool, pool: int = 4, train_transform=None):
         x = scaler(torch.from_numpy(raw[s][0]))
         if flat:
             x = pool_flat(x)
-
+        # for future when we willaugment the training data only
         if s=="train":
             innp = train_transform
         else:
@@ -140,11 +142,13 @@ if __name__=="__main__":
     print(load_data.blank_report())
     print(images.shape, images.dtype)   # (5457, 3, 140, 170) float32
     print(labels.shape, labels.dtype)   # (5457,) int64
-    import matplotlib.pyplot as plt
+    train, val, test = build_datasets(load_data, flat=True, pool=conf.pool)
+    if False:
+        import matplotlib.pyplot as plt
 
-    for i in range(images.shape[0]):
-        plt.figure()
-        plt.imshow(images[i,2,:,:])
-        plt.colorbar()
-        plt.savefig(f"{i}_3.png")
+        for i in range(images.shape[0]):
+            plt.figure()
+            plt.imshow(images[i,2,:,:])
+            plt.colorbar()
+            plt.savefig(f"{i}_3.png")
 
